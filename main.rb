@@ -2,7 +2,7 @@ require 'twitter'
 require './services.rb'
 
 
-module ServiceQuery
+class ServiceQuery
 	# Path to service definition file
 	SERVICE_CONFIG = './conf/services.json'
 
@@ -11,10 +11,10 @@ module ServiceQuery
 
 
 	# Query services and post any updates to twitter
-	def run
+	def self.run
 		# Load configuration
 		twitter_client = get_twitter_client
-		service_defs = get_service_defs
+		service_defs = load_service_defs
 
 		# Query services
 		query_services(twitter_client, service_defs)
@@ -25,19 +25,19 @@ module ServiceQuery
 
 
 	# Load service definitions
-	def load_service_defs
-		TribesNext.read_config(SERVICE_CONFIG)
+	def self.load_service_defs
+		TribesNext::Services.read_config(SERVICE_CONFIG)
 	end
 
 
 	# Save service definitions
-	def write_service_defs(service_defs)
-		TribesNext.write_config(SERVICE_CONFIG, services)
+	def self.write_service_defs(service_defs)
+		TribesNext::Services.write_config(SERVICE_CONFIG, service_defs)
 	end
 
 
 	# Query services, and post updates if any have changed availability
-	def query_services(twitter_client, service_defs)
+	def self.query_services(twitter_client, service_defs)
 		workers = []
 
 		# Create background worker for each service
@@ -52,32 +52,32 @@ module ServiceQuery
 
 
 	# Query a service, and post an update if it has changed availability
-	def query_service(twitter_client, service_def)
+	def self.query_service(twitter_client, service_def)
 		begin
-			plural? = ('s' === service_def['name'])
-			available?, changed? = TribesNext.query(service_def)
+			is_plural = ('s' === service_def['name'])
+			is_available, is_changed = TribesNext::Services.query_service(service_def)
 
 			# if state changed: post update
-			if changed? then
-				if available? then
+			if is_changed then
+				if is_available then
 					state = 'AVAILABLE'
-					verb = if plural? then 'are' else 'is' end
+					verb = if is_plural then 'are' else 'is' end
 				else
 					state = 'UNAVAILABLE'
-					verb = if plural? then 'appear to be' else 'appears to be' end
+					verb = if is_plural then 'appear to be' else 'appears to be' end
 				end
 
 				twitter_client.update("#{service_def['name']} #{verb} #{state}.")
 			end
 		rescue Exception => ex
-			puts "Exception encountered while querying #{service['name']}: #{e.message}"
-			puts e.backtrace.inspect if debug?
+			puts "Exception encountered while querying #{service_def['name']}: #{ex.message}"
+			puts ex.backtrace.inspect
 		end
 	end
 
 
 	# Create a client for interacting with a twitter account
-	def get_twitter_client
+	def self.get_twitter_client
 		# Load config file
 		opts = JSON.parse(File.read(TWITTER_CONFIG))
 		# create client
