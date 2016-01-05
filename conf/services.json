@@ -1,0 +1,23 @@
+[
+  {
+    "type": "auth",
+    "url": "http://tribesnext.com/auth",
+    "available": false,
+    "name": "Account creation",
+    "changed": false
+  },
+  {
+    "type": "list",
+    "url": "http://master.tribesnext.com/list",
+    "available": true,
+    "name": "Server listing",
+    "changed": false
+  },
+  {
+    "type": "community",
+    "url": "http://thyth.com/tn/robot/robot_login.php?guid=2126694&nonce=101deadbeef",
+    "available": false,
+    "name": "Community features",
+    "changed": false
+  }
+]
